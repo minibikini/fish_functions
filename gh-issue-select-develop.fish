@@ -1,5 +1,7 @@
-function gh-select-issue-develop --description "Select GitHub issue for development"
-    # This function provides an interactive interface to select and create development branches from GitHub issues.
+function gh-issue-select-develop --description "Select GitHub issue for development"
+
+    # This function provides an interactive interface to select
+    # and create development branches from GitHub issues.
     #
     # Requirements:
     #   - gh (GitHub CLI)
@@ -27,11 +29,12 @@ function gh-select-issue-develop --description "Select GitHub issue for developm
     # Use fzf for selection with layout=reverse-list and dynamic height
     set selected_issue (printf "%s\n" $issues | fzf --height=$fzf_height --layout=reverse-list --header-lines=0 --ansi)
 
+    printf "\033[1A\033[2K"
     if test -n "$selected_issue"
         set issue_number (echo $selected_issue | string match -r '^#(\d+)' | tail -n1)
 
         if test -n "$issue_number"
-            printf "\033[1A\033[2K"
+
             gh issue develop "#$issue_number" -c
         end
     end

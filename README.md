@@ -20,7 +20,7 @@ A collection of useful Fish shell functions.
 
 ## Available Functions
 
-### gh-select-issue-develop
+### gh-issue-select-develop
 
 Interactive GitHub issue selector for development branches.
 
@@ -32,7 +32,7 @@ Interactive GitHub issue selector for development branches.
 **Usage:**
 
 ```fish
-gh-select-issue-develop
+gh-issue-select-develop
 ```
 
 Quickly select a GitHub issue and create a development branch for it. Uses fuzzy search to find the right issue and automatically checks out the new branch.
