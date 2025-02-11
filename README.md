@@ -1,5 +1,7 @@
 # fish_functions
 
+A collection of useful Fish shell functions.
+
 ## Installation
 
 1. Clone or download this repository to your preferred location
