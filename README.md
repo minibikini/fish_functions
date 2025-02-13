@@ -24,6 +24,8 @@ A collection of useful Fish shell functions.
 
 Interactive GitHub issue selector for development branches.
 
+https://github.com/user-attachments/assets/4c4284ff-368b-40f8-8cde-d759da3758ed
+
 **Requirements:**
 
 - [GitHub CLI](https://cli.github.com/) (`gh`)
