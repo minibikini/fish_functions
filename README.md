@@ -20,7 +20,7 @@ A collection of useful Fish shell functions.
 
 ## Available Functions
 
-### ghce (GitHub Copilot Explain)
+### `ghce` (GitHub Copilot Explain)
 
 A wrapper around `gh copilot explain` to explain commands in natural language.
 
@@ -40,7 +40,7 @@ ghce [flags] <command>
 - `-h, --help`: Display help usage
 - `--hostname`: The GitHub host to use for authentication
 
-### ghcs (GitHub Copilot Suggest)
+### `ghcs` (GitHub Copilot Suggest)
 
 A wrapper around `gh copilot suggest` to get command suggestions based on natural language descriptions.
 
@@ -61,7 +61,7 @@ ghcs [flags] <prompt>
 - `--hostname`: The GitHub host to use for authentication
 - `-t, --target`: Target for suggestion (shell, gh, git; default: "shell")
 
-### touch-p-open
+### `touch-p-open`
 
 Creates parent directories if needed, creates a new file, and opens it in Zed editor.
 
