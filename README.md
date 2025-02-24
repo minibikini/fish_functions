@@ -26,7 +26,7 @@ A wrapper around `gh copilot explain` to explain commands in natural language.
 
 **Requirements:**
 
-- [GitHub CLI](https://cli.github.com/) (`gh`) with Copilot extension
+- [`gh`](https://cli.github.com/) with Copilot extension
 
 **Usage:**
 
@@ -46,7 +46,7 @@ A wrapper around `gh copilot suggest` to get command suggestions based on natura
 
 **Requirements:**
 
-- [GitHub CLI](https://cli.github.com/) (`gh`) with Copilot extension
+- [`gh`](https://cli.github.com/) with Copilot extension
 
 **Usage:**
 
