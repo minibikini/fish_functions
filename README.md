@@ -1,6 +1,6 @@
 # fish_functions
 
-A collection of useful Fish shell functions.
+My personal fish function collection.
 
 ## Installation
 
