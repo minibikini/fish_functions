@@ -24,8 +24,6 @@ A collection of useful Fish shell functions.
 
 A wrapper around `gh copilot explain` to explain commands in natural language.
 
-https://github.com/user-attachments/assets/4c4284ff-368b-40f8-8cde-d759da3758ed
-
 **Requirements:**
 
 - [GitHub CLI](https://cli.github.com/) (`gh`) with Copilot extension
