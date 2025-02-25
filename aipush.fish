@@ -23,7 +23,6 @@ function aipush --description "Automatically stages and commits changes using AI
 
     if aider --commit --no-check-update
         echo "✨ Aider commit successful, pushing changes..."
-        echo "⏳ Temporary skip git push."
 
         if git push
             echo "✅ Changes pushed successfully"
