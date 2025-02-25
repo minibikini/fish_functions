@@ -74,3 +74,29 @@ Creates parent directories if needed, creates a new file, and opens it in Zed ed
 ```fish
 touch-p-open path/to/new/file
 ```
+
+### `aipush` (AI-Powered Git Push)
+
+Automatically stages and commits changes using AI-generated commit messages via Aider.
+
+**Requirements:**
+
+- [Aider](https://github.com/paul-gauthier/aider)
+
+**Usage:**
+
+```fish
+aipush
+```
+
+**Features:**
+
+- Shows current repository status
+- Supports custom commit prompts via `commit-prompt.txt` in repo root
+- Automatically stages all changes
+- Generates commit messages using [Aider](https://github.com/paul-gauthier/aider)
+- Pushes changes to remote repository
+
+**Optional:**
+
+You can create a `commit-prompt.txt` file in your repository root to customize the commit message prompt used by Aider.
