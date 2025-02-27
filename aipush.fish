@@ -28,7 +28,7 @@ function aipush --description "Automatically stages and commits changes using AI
     if test "$dry_run" = true
         echo "🔍 DRY RUN: Would stage all changes"
         echo "🔍 DRY RUN: Would execute: aider --commit --no-auto-commits --no-check-update"
-        aider --commit --dry-run --no-check-update
+        aider --commit --no-auto-commits --no-check-update
         echo "🔍 DRY RUN: Would push changes if commit successful"
         return 0
     end
