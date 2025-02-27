@@ -16,6 +16,25 @@ function aipush --description "Automatically stages and commits changes using AI
 
     git status --short
 
+    # Check for untracked changes
+    set -l untracked_changes (git status --porcelain | awk '$1 == "??"')
+    if test -n "$untracked_changes"
+        echo "Untracked changes detected:"
+        echo "$untracked_changes"
+        read -l -P "Stage untracked changes as well? (Y/n): " stage_untracked
+        if test "$stage_untracked" != "n"
+            echo "📦 Staging all changes, including untracked files..."
+            git add --all
+        else
+            echo "Skipping untracked files"
+        end
+    else
+        echo "📦 Staging all changes..."
+        git add --all
+    end
+
+
+
     # Check for commit-prompt.txt in repo root
     set -l repo_root (git rev-parse --show-toplevel)
     set -l prompt_file "$repo_root/commit-prompt.txt"
@@ -32,8 +51,7 @@ function aipush --description "Automatically stages and commits changes using AI
         return 0
     end
 
-    echo "📦 Staging all changes..."
-    git add --all
+
 
     if _aipush_commit_process false
         echo "✨ Commit successful, pushing changes..."
@@ -54,10 +72,13 @@ function _aipush_commit_process --argument-names dry_run
     if aider --commit --no-check-update
         # Get the last commit message
         set -l commit_msg (git log -1 --pretty=%B)
-        echo "📝 AI generated commit message:"
-        echo "$commit_msg"
 
-        read -l -P "🔄 Do you want to: (e)dit this commit message, (u)ndo this commit, or (k)eep as is? (e/u/k) [k]: " edit_response
+        echo "Options:"
+        echo "  (k) ✅  Keep as is (default)"
+        echo "  (e) 📝  Edit the commit message"
+        echo "  (u) ⏪  Undo this commit"
+        echo
+        read -l -P "🔄 What would you like to do? [k]: " edit_response
 
         switch $edit_response
             case "e" "E"
