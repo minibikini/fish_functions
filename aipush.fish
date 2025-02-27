@@ -57,25 +57,30 @@ function _aipush_commit_process --argument-names dry_run
         echo "📝 AI generated commit message:"
         echo "$commit_msg"
 
-        read -l -P "🔄 Do you want to edit this commit message? (y/N) " edit_response
+        read -l -P "🔄 Do you want to: (e)dit this commit message, (u)ndo this commit, or (k)eep as is? (e/u/k) [k]: " edit_response
 
-        if test "$edit_response" = "y" -o "$edit_response" = "Y"
-            # Create a temp file with the commit message
-            set -l temp_file (mktemp)
-            echo "$commit_msg" > $temp_file
+        switch $edit_response
+            case "e" "E"
+                # Create a temp file with the commit message
+                set -l temp_file (mktemp)
+                echo "$commit_msg" > $temp_file
 
-            # Open editor for the user to edit the message
-            zed --wait $temp_file
+                # Open editor for the user to edit the message
+                zed --wait $temp_file
 
-            # Amend the commit with the new message
-            git commit --amend -F $temp_file
+                # Amend the commit with the new message
+                git commit --amend -F $temp_file
 
-            # Clean up
-            rm $temp_file
+                # Clean up
+                rm $temp_file
 
-            echo "✏️ Commit message updated"
-        else
-            echo "✅ Keeping original commit message"
+                echo "✏️ Commit message updated"
+            case "u" "U"
+                git reset HEAD~1
+                echo "⏪ Last commit undone, changes are back in staging area"
+                return 1
+            case "*"
+                echo "✅ Keeping original commit message"
         end
 
         return 0
