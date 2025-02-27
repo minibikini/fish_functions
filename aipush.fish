@@ -51,12 +51,6 @@ function aipush --description "Automatically stages and commits changes using AI
 end
 
 function _aipush_commit_process --argument-names dry_run
-    if test "$dry_run" = true
-        echo "🔍 DRY RUN: Would execute: aider --commit --no-check-update"
-        aider --commit --no-check-update
-        return 0
-    end
-
     if aider --commit --no-check-update
         # Get the last commit message
         set -l commit_msg (git log -1 --pretty=%B)
