@@ -27,8 +27,7 @@ function aipush --description "Automatically stages and commits changes using AI
 
     if test "$dry_run" = true
         echo "🔍 DRY RUN: Would stage all changes"
-        echo "🔍 DRY RUN: Would execute: aider --commit --no-auto-commits --no-check-update"
-        aider --commit --no-auto-commits --no-check-update
+        _aipush_commit_process true
         echo "🔍 DRY RUN: Would push changes if commit successful"
         return 0
     end
@@ -36,8 +35,8 @@ function aipush --description "Automatically stages and commits changes using AI
     echo "📦 Staging all changes..."
     git add --all
 
-    if aider --commit --no-check-update
-        echo "✨ Aider commit successful, pushing changes..."
+    if _aipush_commit_process false
+        echo "✨ Commit successful, pushing changes..."
 
         if git push
             echo "✅ Changes pushed successfully"
@@ -46,7 +45,47 @@ function aipush --description "Automatically stages and commits changes using AI
             return 1
         end
     else
-        echo "💩 `aider --commit` failed, not pushing"
+        echo "💩 Commit failed, not pushing"
+        return 1
+    end
+end
+
+function _aipush_commit_process --argument-names dry_run
+    if test "$dry_run" = true
+        echo "🔍 DRY RUN: Would execute: aider --commit --no-check-update"
+        aider --commit --no-check-update
+        return 0
+    end
+
+    if aider --commit --no-check-update
+        # Get the last commit message
+        set -l commit_msg (git log -1 --pretty=%B)
+        echo "📝 AI generated commit message:"
+        echo "$commit_msg"
+
+        read -l -P "🔄 Do you want to edit this commit message? (y/N) " edit_response
+
+        if test "$edit_response" = "y" -o "$edit_response" = "Y"
+            # Create a temp file with the commit message
+            set -l temp_file (mktemp)
+            echo "$commit_msg" > $temp_file
+
+            # Open editor for the user to edit the message
+            zed --wait $temp_file
+
+            # Amend the commit with the new message
+            git commit --amend -F $temp_file
+
+            # Clean up
+            rm $temp_file
+
+            echo "✏️ Commit message updated"
+        else
+            echo "✅ Keeping original commit message"
+        end
+
+        return 0
+    else
         return 1
     end
 end
