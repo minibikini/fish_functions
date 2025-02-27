@@ -1,4 +1,11 @@
 function aipush --description "Automatically stages and commits changes using AI-generated commit messages"
+    argparse 'dry-run' -- $argv
+
+    set -l dry_run false
+    if set -q _flag_dry_run
+        set dry_run true
+    end
+
     echo "📋 Current repository status:"
     set -l changes (git status --porcelain)
 
@@ -16,6 +23,14 @@ function aipush --description "Automatically stages and commits changes using AI
     if test -f $prompt_file
         echo "📝 Using commit prompt from commit-prompt.txt"
         set -x AIDER_COMMIT_PROMPT (cat $prompt_file)
+    end
+
+    if test "$dry_run" = true
+        echo "🔍 DRY RUN: Would stage all changes"
+        echo "🔍 DRY RUN: Would execute: aider --commit --no-auto-commits --no-check-update"
+        aider --commit --dry-run --no-check-update
+        echo "🔍 DRY RUN: Would push changes if commit successful"
+        return 0
     end
 
     echo "📦 Staging all changes..."
