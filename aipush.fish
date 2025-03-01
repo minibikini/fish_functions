@@ -58,8 +58,12 @@ end
 function _load_commit_prompt
     set -l repo_root (git rev-parse --show-toplevel)
     set -g prompt_file "$repo_root/commit-prompt.txt"
+    set -g commit_prompt_md "$repo_root/commit-prompt.md"
 
-    if test -f $prompt_file
+    if test -f $commit_prompt_md
+        echo "📝 Using commit prompt from commit-prompt.md"
+        set -x AIDER_COMMIT_PROMPT (cat $commit_prompt_md)
+    else if test -f $prompt_file
         echo "📝 Using commit prompt from commit-prompt.txt"
         set -x AIDER_COMMIT_PROMPT (cat $prompt_file)
     end
