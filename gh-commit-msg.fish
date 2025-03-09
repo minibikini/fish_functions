@@ -1,4 +1,4 @@
-function generate_commit_message
+function gh-commit-msg -d "Generate Git commit messages using GitHub Models"
     argparse 'p/prompt-file=' -- $argv
 
     # Define the default prompt
