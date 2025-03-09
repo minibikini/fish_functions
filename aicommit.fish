@@ -91,7 +91,7 @@ function _commit_process --argument-names dry_run
     while test "$should_proceed" = false
         # Use generate_commit_message to get AI-generated commit message
         echo "🤖 Generating commit message..."
-        set commit_msg (generate_commit_message)
+        set commit_msg (gh-commit-msg)
 
         if test -z "$commit_msg"
             echo "💩 Failed to generate commit message"
