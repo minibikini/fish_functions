@@ -47,42 +47,37 @@ function aicommit --description "Generates commit messages from staged changes w
     end
 
     if $dry_run
-        set_color --bold yellow
-        echo "🔍 DRY RUN MODE: No actual changes will be committed or pushed"
-        set_color normal
+        _echo_warning "🔍 DRY RUN MODE: No actual changes will be committed or pushed"
         _commit_process $dry_run
         if $should_push
-            set_color --bold yellow
-            echo "🔍 DRY RUN: Would push changes if commit successful"
-            set_color normal
+            _echo_warning "🔍 DRY RUN: Would push changes if commit successful"
         end
+
         # Unstage everything only if we staged it ourselves
         if $staged_ourselves
-            set_color --bold yellow
-            echo "🔍 DRY RUN: Would unstage all changes we staged"
-            set_color normal
+            _echo_warning "🔍 DRY RUN: Would unstage all changes we staged"
         end
         return 0
     end
 
     if _commit_process $dry_run
-        echo "✨ Commit successful"
+        _echo_success "✨ Commit successful"
 
         if $should_push
             echo "🚀 Pushing changes..."
             set -l push_output (git push 2>&1)
             set -l push_status $status
             if test $push_status -eq 0
-                echo "✅ Changes pushed successfully"
+                _echo_success "✅ Changes pushed successfully"
             else
                 set_color red
-                echo "💩 Push Failed: $push_output"
+                _echo_error "💩 Push Failed: $push_output"
                 set_color normal
                 return 1
             end
         end
     else
-        echo "💩 Commit failed"
+        _echo_error "💩 Commit failed"
         # Unstage everything only if we staged it ourselves
         if $staged_ourselves
             echo "Unstaging all changes"
@@ -193,4 +188,23 @@ function _edit_message --argument-names message
 
     echo "✏️ Message edited"
     echo $edited_message
+end
+
+
+function _echo_success
+    set_color green
+    echo $argv
+    set_color normal
+end
+
+function _echo_error
+    set_color red
+    echo $argv
+    set_color normal
+end
+
+function _echo_warning
+    set_color --bold yellow
+    echo $argv
+    set_color normal
 end
