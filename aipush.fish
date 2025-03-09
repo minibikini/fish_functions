@@ -16,12 +16,15 @@ function aipush --description "Automatically stages and commits changes using AI
 
     git status --short
 
-    _handle_untracked_files
-    _load_commit_prompt
+    # Stage all changes including untracked files at the beginning
+    echo "📦 Staging all changes, including untracked files..."
+    git add --all
 
     if test "$dry_run" = true
         _aipush_commit_process true
         echo "🔍 DRY RUN: Would push changes if commit successful"
+        # Unstage everything since this is just a dry run
+        git reset
         return 0
     end
 
@@ -35,87 +38,87 @@ function aipush --description "Automatically stages and commits changes using AI
             return 1
         end
     else
-        echo "💩 Commit failed, not pushing"
+        echo "💩 Commit failed, unstaging all changes"
+        git reset
         return 1
-    end
-end
-
-function _handle_untracked_files
-    set -l untracked_changes (git status --porcelain | awk '$1 == "??"')
-    if test -n "$untracked_changes"
-        echo "⚠️ Untracked changes detected:"
-        echo "$untracked_changes"
-        read -l -P "🤔 Stage untracked changes as well? (Y/n): " stage_untracked
-        if test "$stage_untracked" != "n"
-            echo "📦 Staging all changes, including untracked files..."
-            git add --all
-        else
-            echo "🚫 Skipping untracked files"
-        end
-    end
-end
-
-function _load_commit_prompt
-    set -l repo_root (git rev-parse --show-toplevel)
-    set -g prompt_file "$repo_root/commit-prompt.txt"
-    set -g commit_prompt_md "$repo_root/commit-prompt.md"
-
-    if test -f $commit_prompt_md
-        echo "📝 Using commit prompt from commit-prompt.md"
-        set -x AIDER_COMMIT_PROMPT (cat $commit_prompt_md)
-    else if test -f $prompt_file
-        echo "📝 Using commit prompt from commit-prompt.txt"
-        set -x AIDER_COMMIT_PROMPT (cat $prompt_file)
     end
 end
 
 function _aipush_commit_process --argument-names dry_run
     if test "$dry_run" = true
-        echo "🔍 DRY RUN: Would commit changes with 'aider --commit'"
+        echo "🔍 DRY RUN: Would generate commit message and commit changes"
         return 0
     end
 
-    if not aider --commit --no-check-update
+    set -l commit_msg ""
+    set -l should_proceed false
+
+    while test "$should_proceed" = false
+        # Use generate_commit_message to get AI-generated commit message
+        echo "🤖 Generating commit message..."
+        set commit_msg (generate_commit_message)
+
+        if test -z "$commit_msg"
+            echo "❌ Failed to generate commit message"
+            return 1
+        end
+
+        echo "📝 Generated commit message:"
+        echo
+        set_color green
+        echo "$commit_msg"
+        set_color normal
+        echo
+
+        echo "Options:"
+        echo "  (c) ✅  Commit with this message"
+        echo "  (e) 📝  Edit message before commit"
+        echo "  (r) 🔄  Regenerate new message"
+        echo "  (q) 🚫  Quit without committing"
+        echo
+        read -l -P "What would you like to do? [c]: " action
+
+        switch $action
+            case "c" ""
+                set should_proceed true
+            case "e"
+                set commit_msg (_edit_message "$commit_msg")
+                set should_proceed true
+            case "r"
+                echo "🔄 Regenerating message..."
+                # Loop will continue
+            case "q"
+                echo "🚫 Commit process aborted, unstaging changes"
+                git reset  # Unstage all changes
+                return 1
+            case "*"
+                set should_proceed true
+        end
+    end
+
+    # Commit with the message
+    if git commit -m "$commit_msg"
+        return 0
+    else
+        echo "❌ Failed to commit changes"
         return 1
     end
-
-    # Get the last commit message
-    set -l commit_msg (git log -1 --pretty=%B)
-
-    echo "Options:"
-    echo "  (k) ✅  Keep as is (default)"
-    echo "  (e) 📝  Edit the commit message"
-    echo "  (u) ⏪  Undo this commit"
-    echo
-    read -l -P "🔄 What would you like to do? [k]: " edit_response
-
-    switch $edit_response
-        case "e" "E"
-            _edit_commit_message "$commit_msg"
-        case "u" "U"
-            git reset HEAD~1
-            echo "⏪ Last commit undone, changes are back in staging area"
-            return 1
-        case "*"
-            echo "✅ Keeping original commit message"
-    end
-
-    return 0
 end
 
-function _edit_commit_message --argument-names commit_msg
-    # Create a temp file with the commit message
+function _edit_message --argument-names message
+    # Create a temp file with the message
     set -l temp_file (mktemp)
-    echo "$commit_msg" > $temp_file
+    echo "$message" > $temp_file
 
     # Open editor for the user to edit the message
     zed --wait $temp_file
 
-    # Amend the commit with the new message
-    git commit --amend -F $temp_file
+    # Read the edited message
+    set -l edited_message (cat $temp_file)
 
     # Clean up
     rm $temp_file
 
-    echo "✏️ Commit message updated"
+    echo "✏️ Message edited"
+    echo $edited_message
 end
