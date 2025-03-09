@@ -45,7 +45,7 @@ function aicommit --description "Generates commit messages from staged changes w
     end
 
     if test "$dry_run" = true
-        _aipush_commit_process true
+        _commit_process true
         if test "$should_push" = true
             echo "🔍 DRY RUN: Would push changes if commit successful"
         end
@@ -56,7 +56,7 @@ function aicommit --description "Generates commit messages from staged changes w
         return 0
     end
 
-    if _aipush_commit_process false
+    if _commit_process false
         echo "✨ Commit successful"
 
         if test "$should_push" = true
@@ -79,7 +79,7 @@ function aicommit --description "Generates commit messages from staged changes w
     end
 end
 
-function _aipush_commit_process --argument-names dry_run
+function _commit_process --argument-names dry_run
     if test "$dry_run" = true
         echo "🔍 DRY RUN: Would generate commit message and commit changes"
         return 0
