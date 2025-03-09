@@ -186,7 +186,6 @@ function _edit_message --argument-names message
     # Clean up
     rm $temp_file
 
-    echo "✏️ Message edited"
     echo $edited_message
 end
 
