@@ -50,6 +50,8 @@ aicommit [flags]
 - Ability to stage all changes and push in a single command
 - Dry run mode for safety
 
+---
+
 ### `gh-commit-msg`
 
 Generate Git commit messages using GitHub Models.
@@ -75,6 +77,8 @@ gh-commit-msg [flags]
 - Supports custom prompts via command-line flag or `commit-prompt.md` file
 - Uses GitHub Models (GPT-4o) for generating high-quality commit messages
 
+---
+
 ### `ghce` (GitHub Copilot Explain)
 
 A wrapper around `gh copilot explain` to explain commands in natural language.
@@ -94,6 +98,8 @@ ghce [flags] <command>
 - `-d, --debug`: Enable debugging
 - `-h, --help`: Display help usage
 - `--hostname`: The GitHub host to use for authentication
+
+---
 
 ### `ghcs` (GitHub Copilot Suggest)
 
