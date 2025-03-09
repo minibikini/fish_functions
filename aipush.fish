@@ -59,7 +59,7 @@ function _aipush_commit_process --argument-names dry_run
         set commit_msg (generate_commit_message)
 
         if test -z "$commit_msg"
-            echo "❌ Failed to generate commit message"
+            echo "💩 Failed to generate commit message"
             return 1
         end
 
