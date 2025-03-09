@@ -1,5 +1,5 @@
 function aicommit --description "Generates commit messages from staged changes with optional staging and pushing"
-    argparse 'dry-run' 'a/all' 'p/push' -- $argv
+    argparse 'd/dry-run' 'a/all' 'p/push' -- $argv
 
     set -l dry_run false
     set -l stage_all false
@@ -19,6 +19,7 @@ function aicommit --description "Generates commit messages from staged changes w
 
     echo "📋 Current repository status:"
     set -l changes (git status --porcelain)
+    echo
 
     if test -z "$changes"
         echo "💤 No changes to commit"
@@ -28,7 +29,7 @@ function aicommit --description "Generates commit messages from staged changes w
     git status --short
 
     # Stage all changes only if --all flag is specified
-    if test "$stage_all" = true
+    if $stage_all
         echo "📦 Staging all changes, including untracked files..."
         git add --all
         set staged_ourselves true
@@ -44,34 +45,45 @@ function aicommit --description "Generates commit messages from staged changes w
         return 0
     end
 
-    if test "$dry_run" = true
-        _commit_process true
-        if test "$should_push" = true
+    if $dry_run
+        set_color --bold yellow
+        echo "🔍 DRY RUN MODE: No actual changes will be committed or pushed"
+        set_color normal
+        _commit_process $dry_run
+        if $should_push
+            set_color --bold yellow
             echo "🔍 DRY RUN: Would push changes if commit successful"
+            set_color normal
         end
         # Unstage everything only if we staged it ourselves
-        if test "$staged_ourselves" = true
-            git reset
+        if $staged_ourselves
+            set_color --bold yellow
+            echo "🔍 DRY RUN: Would unstage all changes we staged"
+            set_color normal
         end
         return 0
     end
 
-    if _commit_process false
+    if _commit_process $dry_run
         echo "✨ Commit successful"
 
-        if test "$should_push" = true
+        if $should_push
             echo "🚀 Pushing changes..."
-            if git push
+            set -l push_output (git push 2>&1)
+            set -l push_status $status
+            if test $push_status -eq 0
                 echo "✅ Changes pushed successfully"
             else
-                echo "💩 Push Failed"
+                set_color red
+                echo "💩 Push Failed: $push_output"
+                set_color normal
                 return 1
             end
         end
     else
         echo "💩 Commit failed"
         # Unstage everything only if we staged it ourselves
-        if test "$staged_ourselves" = true
+        if $staged_ourselves
             echo "Unstaging all changes"
             git reset
         end
@@ -80,21 +92,25 @@ function aicommit --description "Generates commit messages from staged changes w
 end
 
 function _commit_process --argument-names dry_run
-    if test "$dry_run" = true
+    if $dry_run
+        set_color --bold yellow
         echo "🔍 DRY RUN: Would generate commit message and commit changes"
+        set_color normal
         return 0
     end
 
     set -l commit_msg ""
     set -l should_proceed false
 
-    while test "$should_proceed" = false
-        # Use generate_commit_message to get AI-generated commit message
+    while not $should_proceed
+        # Use gh-commit-msg to get AI-generated commit message
         echo "🤖 Generating commit message..."
         set commit_msg (gh-commit-msg)
 
         if test -z "$commit_msg"
+            set_color red
             echo "💩 Failed to generate commit message"
+            set_color normal
             return 1
         end
 
@@ -126,15 +142,22 @@ function _commit_process --argument-names dry_run
                 echo "🚫 Commit process aborted"
                 return 1
             case "*"
-                set should_proceed true
+                set_color yellow
+                echo "⚠️ Invalid input. Please select c, e, r, or q."
+                set_color normal
+                # Loop continues to prompt again
         end
     end
 
     # Commit with the message
-    if git commit -m "$commit_msg"
+    set -l commit_output (git commit -m "$commit_msg" 2>&1)
+    set -l commit_status $status
+    if test $commit_status -eq 0
         return 0
     else
-        echo "❌ Failed to commit changes"
+        set_color red
+        echo "❌ Failed to commit changes: $commit_output"
+        set_color normal
         return 1
     end
 end
@@ -144,8 +167,22 @@ function _edit_message --argument-names message
     set -l temp_file (mktemp)
     echo "$message" > $temp_file
 
+    # Find available editor
+    set -l editor $EDITOR
+    if test -z "$editor"
+        if type -q zed
+            set editor "zed --wait"
+        else if type -q code
+            set editor "code --wait"
+        else if type -q nano
+            set editor "nano"
+        else
+            set editor "vi"
+        end
+    end
+
     # Open editor for the user to edit the message
-    zed --wait $temp_file
+    eval "$editor $temp_file"
 
     # Read the edited message
     set -l edited_message (cat $temp_file)
