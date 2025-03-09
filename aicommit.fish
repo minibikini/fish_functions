@@ -19,14 +19,15 @@ function aicommit --description "Generates commit messages from staged changes w
 
     echo "📋 Current repository status:"
     set -l changes (git status --porcelain)
-    echo
 
     if test -z "$changes"
         echo "💤 No changes to commit"
         return 0
     end
 
+    echo
     git status --short
+    echo
 
     # Stage all changes only if --all flag is specified
     if $stage_all
