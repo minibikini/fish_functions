@@ -1,9 +1,15 @@
 function aipush --description "Automatically stages and commits changes using AI-generated commit messages"
-    argparse 'dry-run' -- $argv
+    argparse 'dry-run' 'all' -- $argv
 
     set -l dry_run false
+    set -l stage_all false
+
     if set -q _flag_dry_run
         set dry_run true
+    end
+
+    if set -q _flag_all
+        set stage_all true
     end
 
     echo "📋 Current repository status:"
@@ -16,15 +22,30 @@ function aipush --description "Automatically stages and commits changes using AI
 
     git status --short
 
-    # Stage all changes including untracked files at the beginning
-    echo "📦 Staging all changes, including untracked files..."
-    git add --all
+    # Stage all changes only if --all flag is specified
+    if test "$stage_all" = true
+        echo "📦 Staging all changes, including untracked files..."
+        git add --all
+        set staged_ourselves true
+    else
+        echo "📦 Using currently staged files..."
+        set staged_ourselves false
+    end
+
+    # Check if there are any staged changes
+    set -l staged_changes (git diff --cached --name-only)
+    if test -z "$staged_changes"
+        echo "💤 No staged changes to commit. Use --all to stage and commit all changes."
+        return 0
+    end
 
     if test "$dry_run" = true
         _aipush_commit_process true
         echo "🔍 DRY RUN: Would push changes if commit successful"
-        # Unstage everything since this is just a dry run
-        git reset
+        # Unstage everything only if we staged it ourselves
+        if test "$staged_ourselves" = true
+            git reset
+        end
         return 0
     end
 
@@ -38,8 +59,12 @@ function aipush --description "Automatically stages and commits changes using AI
             return 1
         end
     else
-        echo "💩 Commit failed, unstaging all changes"
-        git reset
+        echo "💩 Commit failed"
+        # Unstage everything only if we staged it ourselves
+        if test "$staged_ourselves" = true
+            echo "Unstaging all changes"
+            git reset
+        end
         return 1
     end
 end
@@ -88,8 +113,7 @@ function _aipush_commit_process --argument-names dry_run
                 echo "🔄 Regenerating message..."
                 # Loop will continue
             case "q"
-                echo "🚫 Commit process aborted, unstaging changes"
-                git reset  # Unstage all changes
+                echo "🚫 Commit process aborted"
                 return 1
             case "*"
                 set should_proceed true
