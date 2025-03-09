@@ -61,42 +61,27 @@ ghcs [flags] <prompt>
 - `--hostname`: The GitHub host to use for authentication
 - `-t, --target`: Target for suggestion (shell, gh, git; default: "shell")
 
-### `touch-p-open`
+### `gh-commit-msg`
 
-Creates parent directories if needed, creates a new file, and opens it in Zed editor.
+Generate Git commit messages using GitHub Models.
 
 **Requirements:**
 
-- [Zed Editor](https://zed.dev/)
+- [`gh`](https://cli.github.com/) with models support
 
 **Usage:**
 
 ```fish
-touch-p-open path/to/new/file
+gh-commit-msg [flags]
 ```
 
-### `aipush` (AI-Powered Git Push)
+**Flags:**
 
-Automatically stages and commits changes using AI-generated commit messages via Aider.
-
-**Requirements:**
-
-- [Aider](https://github.com/paul-gauthier/aider)
-
-**Usage:**
-
-```fish
-aipush
-```
+- `-p, --prompt-file`: Optional path to a custom prompt file
 
 **Features:**
 
-- Shows current repository status
-- Supports custom commit prompts via `commit-prompt.txt` in repo root
-- Automatically stages all changes
-- Generates commit messages using [Aider](https://github.com/paul-gauthier/aider)
-- Pushes changes to remote repository
-
-**Optional:**
-
-You can create a `commit-prompt.txt` file in your repository root to customize the commit message prompt used by Aider.
+- Analyzes staged changes in a git repository
+- Generates concise, well-structured commit messages
+- Supports custom prompts via command-line flag or `commit-prompt.md` file
+- Uses GitHub Models (GPT-4o) for generating high-quality commit messages
