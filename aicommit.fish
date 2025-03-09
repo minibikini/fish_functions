@@ -1,5 +1,5 @@
 function aicommit --description "Generates commit messages from staged changes with optional staging and pushing"
-    argparse 'dry-run' 'all' 'push' -- $argv
+    argparse 'dry-run' 'a/all' 'p/push' -- $argv
 
     set -l dry_run false
     set -l stage_all false
