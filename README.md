@@ -24,6 +24,8 @@ My personal fish function collection.
 
 Generates AI-powered commit messages from staged changes with optional staging and pushing.
 
+<img width="605" alt="Screenshot 2025-03-09 at 17 54 12" src="https://github.com/user-attachments/assets/6fc4ae57-f034-46ae-8f30-cac6c856691d" />
+
 **Requirements:**
 
 - [`gh`](https://cli.github.com/) with models support
