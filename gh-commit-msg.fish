@@ -40,22 +40,48 @@ function gh-commit-msg -d "Generate Git commit messages using GitHub Models"
         set prompt_text (cat "commit-prompt.md")
     end
 
-    # Get the staged changes
-    set diff_output (git diff --cached)
+    # Get the list of staged files
+    set staged_files (git diff --cached --name-status | string collect)
 
     # If nothing is staged, inform the user
-    if test -z "$diff_output"
+    if test -z "$staged_files"
         echo "No changes staged for commit."
         return 1
     end
 
-    # Get the list of staged files for context
-    set staged_files (git diff --cached --name-status | string collect)
+    # Get only the staged files that are actually modified (not renamed/moved)
+    # Exclude files with status R (renamed/moved)
+    set modified_files ""
+    echo "$staged_files" | while read -l line
+        set -l file_status (string sub -l 1 -- $line)
+        if test "$file_status" != "R"
+            set -l file (string replace -r '^[AMD]\s+' '' -- $line)
+            set modified_files "$modified_files $file"
+        end
+    end
+
+    # Get the diff but limit it to a reasonable size
+    set diff_output ""
+    for file in $modified_files
+        # Skip if file doesn't exist (might have been deleted)
+        if git ls-files --error-unmatch --cached $file 2>/dev/null
+            set file_diff (git diff --cached -- $file)
+            set diff_output "$diff_output\n\n--- $file ---\n$file_diff"
+        end
+    end
+
+    # If the diff is too large, truncate it
+    set max_chars 15000  # Reasonable limit to avoid token limit issues
+    if test (string length "$diff_output") -gt $max_chars
+        set diff_output (string sub -l $max_chars "$diff_output")
+        set diff_output "$diff_output\n\n[... diff truncated due to size ...]"
+    end
 
     # Replace placeholders in the prompt with actual data
     set prompt_with_files (string replace '%STAGED_FILES%' "$staged_files" "$prompt_text")
     set final_prompt (string replace '%DIFF_OUTPUT%' "$diff_output" "$prompt_with_files")
 
     # Send to LLM via gh CLI and display the result
-    echo "$final_prompt" | gh models run gpt-4o
+    # echo "$final_prompt" | gh models run gpt-4o
+    echo "$final_prompt" | gh models run gpt-4o-mini
 end
